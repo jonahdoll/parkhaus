@@ -30,6 +30,7 @@ test/lasttest-locust/__pycache__
 test/lasttest-locust/.venv
 test/postman
 sonar-project.properties
+server.crt
 
 # Logs
 log
