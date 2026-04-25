@@ -1,0 +1,8 @@
+set search_path to 'parkhaus';
+
+DROP TABLE IF EXISTS parkhaus_file CASCADE;
+DROP TABLE IF EXISTS auto CASCADE;
+DROP TABLE IF EXISTS adresse CASCADE;
+DROP TABLE IF EXISTS parkhaus CASCADE;
+
+DROP TYPE IF EXISTS kundentyp;
