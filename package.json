@@ -26,9 +26,9 @@
     "lodash": "4.17.23"
   },
   "dependencies": {
-    "@prisma/adapter-pg": "7.7.0",
-    "@prisma/client": "7.7.0",
-    "@prisma/sqlcommenter-query-insights": "7.7.0",
+    "@prisma/adapter-pg": "7.8.0",
+    "@prisma/client": "7.8.0",
+    "@prisma/sqlcommenter-query-insights": "7.8.0",
     "dotenv": "17.4.2",
     "hono": "4.12.14",
     "pg": "8.20.0"
@@ -59,7 +59,7 @@
     "jiti": "2.6.1",
     "leasot": "14.4.0",
     "prettier": "3.8.3",
-    "prisma": "7.7.0",
+    "prisma": "7.8.0",
     "typescript": "6.0.3",
     "typescript-eslint": "8.58.2"
   },
