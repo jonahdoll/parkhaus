@@ -64,26 +64,29 @@ try {
     // FROM   parkhaus
     // JOIN   adresse ON parkhaus.id = adresse.parkhaus_id
     // WHERE  adresse.strasse LIKE "%n%"
-    const parkhaeuser: ParkhausMitAdresseUndAutos[] = await prisma.parkhaus.findMany({
-        where: {
-            adresse: {
-                is: {
-                    strasse: {
-                        contains: 'n',
+    const parkhaeuser: ParkhausMitAdresseUndAutos[] =
+        await prisma.parkhaus.findMany({
+            where: {
+                adresse: {
+                    is: {
+                        strasse: {
+                            contains: 'n',
+                        },
                     },
                 },
             },
-        },
-        include: {
-            adresse: true,
-            autos: true,
-        },
-    });
+            include: {
+                adresse: true,
+                autos: true,
+            },
+        });
     message = styleText(['black', 'bgWhite'], 'parkhaeuserMitAdresseUndAutos');
     console.log(`${message} = %j`, parkhaeuser);
     console.log();
 
-    const kennzeichen = parkhaeuser.map((p) => p.autos.map((a) => a.kennzeichen));
+    const kennzeichen = parkhaeuser.map((p) =>
+        p.autos.map((a) => a.kennzeichen),
+    );
     message = styleText(['black', 'bgWhite'], 'kennzeichen');
     console.log(`${message} = %j`, kennzeichen);
     console.log();
