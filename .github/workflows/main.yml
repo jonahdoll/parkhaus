@@ -1,0 +1,40 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master, "feature/**" ]
+  pull_request:
+    branches: [ main, master ]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check-and-build:
+    name: Build & Verify
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Install Dependencies
+        run: bun install --frozen-lockfile
+
+      - name: Prettier Check
+        run: bun x prettier --check "src/**/*.{mts,ts,js,json,md}"
+
+      - name: ESLint
+        run: bun run eslint . --max-warnings=0
+
+      - name: TypeScript Check
+        run: bun x tsc --noEmit
+
+      - name: Build Project
+        run: bun run build
