@@ -28,7 +28,7 @@ jobs:
         run: bun install --frozen-lockfile
 
       - name: Prettier Check
-        run: bun x prettier --check "src/**/*.{mts,ts,js,json,md}"
+        run: bun x prettier --check "src/**/*.{mts,ts,js,json,md}" --ignore prettier.config.mts
 
       - name: ESLint
         run: bun run eslint . --max-warnings=0
