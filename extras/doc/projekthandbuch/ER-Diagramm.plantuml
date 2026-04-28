@@ -36,8 +36,18 @@ entity "Auto" {
   * **parkhaus_id**: integer <<FK>>
 }
 
+entity "Parkhaus_File" {
+  * id : integer <<generated>>
+  --
+  * data : bytea
+  * filename : text
+  * mimetype : text
+  * **parkhaus_id** : integer <<FK>>
+}
+
 Parkhaus ||.left.|| Adresse
 Parkhaus ||..o{ Auto
+Parkhaus ||--o| Parkhaus_File
 
 footer (c) Jonah Doll, Kilian Schmidt
 
