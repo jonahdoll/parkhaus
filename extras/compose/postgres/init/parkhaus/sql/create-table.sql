@@ -23,10 +23,8 @@ CREATE TABLE IF NOT EXISTS adresse (
     ort         text NOT NULL,
     strasse     text NOT NULL,
     hausnummer  text NOT NULL,
-    parkhaus_id integer NOT NULL REFERENCES parkhaus ON DELETE CASCADE
+    parkhaus_id integer NOT NULL UNIQUE REFERENCES parkhaus ON DELETE CASCADE
 );
-CREATE INDEX IF NOT EXISTS adresse_parkhaus_id_idx ON adresse(parkhaus_id);
-CREATE INDEX IF NOT EXISTS adresse_plz_idx ON adresse(plz);
 
 CREATE TABLE IF NOT EXISTS auto (
     id          integer GENERATED ALWAYS AS IDENTITY(START WITH 1000) PRIMARY KEY,
