@@ -30,7 +30,7 @@ jobs:
         env:
           # We need this because in the GitHub VM there is no .env, and we
           # would get an error for the missing DATABASE_URL so we just use this dummy
-          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/parkhaus
+          DATABASE_URL: postgresql://DUMMY_URL
         run: bunx prisma generate --schema prisma/schema.prisma
 
       - name: Run ESLint
