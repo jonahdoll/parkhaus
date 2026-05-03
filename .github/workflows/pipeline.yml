@@ -35,3 +35,6 @@ jobs:
 
       - name: Run ESLint
         run: bun run eslint
+
+      - name: Run Prettier check
+        run: bunx --bun prettier --check .
