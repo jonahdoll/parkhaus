@@ -26,6 +26,12 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
+      - name: Generate Prisma client
+        env:
+          # We need this because in the GitHub VM there is no .env, and we
+          # would get an error for the missing DATABASE_URL so we just use this dummy
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/parkhaus
+        run: bunx prisma generate --schema prisma/schema.prisma
+
       - name: Run ESLint
         run: bun run eslint
-
