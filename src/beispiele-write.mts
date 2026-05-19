@@ -1,7 +1,7 @@
 import { PrismaPg } from '@prisma/adapter-pg';
 import process from 'node:process';
 import { styleText } from 'node:util';
-import { PrismaClient, type Prisma } from './generated/prisma/client.ts';
+import { type Prisma, PrismaClient } from './generated/prisma/client.ts';
 
 let message = styleText(
     'yellow',
