@@ -42,6 +42,6 @@ CREATE TABLE IF NOT EXISTS parkhaus_file (
     data            bytea NOT NULL,
     filename        text NOT NULL,
     mimetype        text,
-    parkhaus_id     integer NOT NULL UNIQUE REFERENCES parkhaus ON DELETE CASCADE
+    parkhaus_id         integer NOT NULL UNIQUE REFERENCES parkhaus ON DELETE CASCADE
 );
 CREATE INDEX IF NOT EXISTS parkhaus_file_parkhaus_id_idx ON parkhaus_file(parkhaus_id);
