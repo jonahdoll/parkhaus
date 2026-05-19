@@ -3,9 +3,9 @@ import { styleText } from 'node:util';
 import { PrismaPg } from '@prisma/adapter-pg';
 import { prismaQueryInsights } from '@prisma/sqlcommenter-query-insights';
 import {
-    PrismaClient,
     type Parkhaus,
     type Prisma,
+    PrismaClient,
 } from './generated/prisma/client.ts';
 
 let message = styleText(['black', 'bgWhite'], 'Node version');
