@@ -1,4 +1,5 @@
 import { DbPopulateService } from './config/dev/db-populate.mts';
+import { KeycloakService } from './security/keycloak-service.mts';
 import { ParkhausService } from './parkhaus/service/parkhaus-service.mts';
 
 const parkhausService = new ParkhausService();
@@ -10,5 +11,6 @@ const parkhausService = new ParkhausService();
  */
 export const container = {
     dbPopulateService: new DbPopulateService(),
+     keycloakService: new KeycloakService(),
     parkhausService,
 };
