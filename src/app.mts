@@ -1,38 +1,27 @@
+/* oxlint-disable import/max-dependencies */
 import { type Context, Hono, type Next } from 'hono';
-import { ForbiddenError, UnauthorizedError } from './security/errors.mts';
 import {
-    IsbnExistsError,
     NotFoundError,
     VersionInvalidError,
     VersionOutdatedError,
-} from './buch/service/errors.mts';
+} from './parkhaus/service/errors.mts';
 import {
     createProblemDetails,
-    forbidden,
     preconditionFailed,
-    unauthorized,
     unprocessableContent,
 } from './problem-details.mts';
 import { type ZodError } from 'zod';
-import { router as authRouter } from './security/auth-router.mts';
-import { router as buchWriteRouter } from './buch/router/buch-write-router.mts';
 import { compress } from 'hono/compress';
 import { cors } from 'hono/cors';
 import { corsOptions } from './config/cors.mts';
-import { createMiddleware } from 'hono/factory'; // oxlint-disable-line import/max-dependencies
-import { router as devRouter } from './config/dev/dev-router.mts';
-import { env } from './config/env.mts';
+import { createMiddleware } from 'hono/factory';
 import { getLogger } from './logger/logger.mts';
-import { graphqlApp } from './buch/graphql/graphql-app.mts';
-import { router as healthRouter } from './admin/health-router.mts';
 import { paths } from './config/paths.mts';
-import { router as prometheusRouter } from './monitoring/prometheus-router.mts';
 import { requestLogger } from './logger/request-logger.mts';
 import { responseTime } from './logger/response-time.mts';
-import { router } from './buch/router/buch-router.mts';
+import { router } from './parkhaus/router/parkhaus-router.mts';
 import { secureHeaders } from 'hono/secure-headers';
 import { showRoutes } from 'hono/dev';
-import { trackMetrics } from './monitoring/prometheus-metrics.mts';
 
 /**
  * Web-Applikation mit Hono.
@@ -54,8 +43,6 @@ const securityHeaders = createMiddleware(async (c: Context, next: Next) => {
 
 app.use(secureHeaders(), cors(corsOptions), securityHeaders, compress());
 
-app.use(trackMetrics);
-
 if (logger.isLevelEnabled('debug')) {
     app.use(responseTime, requestLogger);
 }
@@ -63,17 +50,17 @@ if (logger.isLevelEnabled('debug')) {
 // -----------------------------------------------------------------------------
 // R o u t e n
 // -----------------------------------------------------------------------------
-// app.route(paths.rest, router);
+app.route(paths.rest, router);
 // app.route(paths.rest, buchWriteRouter);
 // app.route(paths.health, healthRouter);
 // app.route(paths.auth, authRouter);
 // app.route('/', graphqlApp);
 // app.route('/prometheus', prometheusRouter);
 
-const { NODE_ENV } = env;
-if (NODE_ENV === 'development' || NODE_ENV === 'test') {
-    app.route(paths.dev, devRouter);
-}
+// const { NODE_ENV } = env;
+// if (NODE_ENV === 'development' || NODE_ENV === 'test') {
+//     app.route(paths.dev, devRouter);
+// }
 
 if (logger.isLevelEnabled('debug')) {
     showRoutes(app, {
@@ -84,6 +71,7 @@ if (logger.isLevelEnabled('debug')) {
 // -----------------------------------------------------------------------------
 // E r r o r   H a n d l e r
 // -----------------------------------------------------------------------------
+// oxlint-disable-next-line promise/prefer-await-to-callbacks
 app.onError((error, c) => {
     if (error instanceof NotFoundError) {
         return c.notFound();
@@ -102,14 +90,6 @@ app.onError((error, c) => {
         error instanceof VersionOutdatedError
     ) {
         return createProblemDetails(c, preconditionFailed, error.message);
-    }
-
-    if (error instanceof UnauthorizedError) {
-        return createProblemDetails(c, unauthorized, error.message);
-    }
-
-    if (error instanceof ForbiddenError) {
-        return createProblemDetails(c, forbidden, error.message);
     }
 
     logger.error('Interner Fehler: %o', error);
