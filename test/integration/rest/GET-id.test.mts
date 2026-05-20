@@ -1,3 +1,5 @@
+// oxlint-disable max-lines-per-function, no-magic-numbers
+
 import { CONTENT_TYPE, IF_NONE_MATCH, restURL } from '../constants.mts';
 import { describe, expect, test } from 'vitest';
 
