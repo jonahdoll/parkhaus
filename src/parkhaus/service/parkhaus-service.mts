@@ -3,11 +3,11 @@
  * @packageDocumentation
  */
 
-import { Prisma } from "../../generated/prisma/client.ts";
-import { getLogger } from "../../logger/logger.mts";
-import { NotFoundError } from "./errors.mts";
-import {ParkhausInclude} from "../../generated/prisma/models/Parkhaus.ts";
 import { prismaClient } from '../../config/prisma-client.mts';
+import { Prisma } from '../../generated/prisma/client.ts';
+import { ParkhausInclude } from '../../generated/prisma/models/Parkhaus.ts';
+import { getLogger } from '../../logger/logger.mts';
+import { NotFoundError } from './errors.mts';
 
 type FindByIdParams = {
     readonly id: number;
@@ -18,7 +18,10 @@ export type ParkhausMitAdresse = Prisma.ParkhausGetPayload<{
     include: { adresse: true };
 }>;
 
-export type ParkhausMitAdresseDTO = Omit<ParkhausMitAdresse, 'tarifProStunde'> & {
+export type ParkhausMitAdresseDTO = Omit<
+    ParkhausMitAdresse,
+    'tarifProStunde'
+> & {
     tarifProStunde: number;
 };
 
@@ -26,10 +29,13 @@ export type ParkhausMitAdresseUndAutos = Prisma.ParkhausGetPayload<{
     include: {
         adresse: true;
         autos: true;
-    }
+    };
 }>;
 
-export type ParkhausMitAdresseUndAutosDTO = Omit<ParkhausMitAdresseUndAutos, 'tarifProStunde'> & {
+export type ParkhausMitAdresseUndAutosDTO = Omit<
+    ParkhausMitAdresseUndAutos,
+    'tarifProStunde'
+> & {
     tarifProStunde: number;
 };
 
@@ -60,7 +66,9 @@ export class ParkhausService {
     }: FindByIdParams): Promise<Readonly<ParkhausMitAdresseUndAutosDTO>> {
         this.#logger.debug('findById: id=%d', id);
 
-        const include = mitAutos ? this.#includeAdresseUndAutos : this.#includeAdresse;
+        const include = mitAutos
+            ? this.#includeAdresseUndAutos
+            : this.#includeAdresse;
         const parkhaus: ParkhausMitAdresseUndAutos | null =
             await prismaClient.parkhaus.findUnique({
                 where: { id },
@@ -68,7 +76,7 @@ export class ParkhausService {
             });
         if (parkhaus === null) {
             this.#logger.debug('Es gibt kein Parkhaus mit der ID %d', id);
-            throw new NotFoundError(`Es gibt kein Parkhaus mit der ID ${id}`);
+            throw new NotFoundError(`Es gibt kein Parkhaus mit der ID ${id}.`);
         }
 
         const { tarifProStunde } = parkhaus;
