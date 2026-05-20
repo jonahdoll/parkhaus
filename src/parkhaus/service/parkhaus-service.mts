@@ -133,9 +133,9 @@ export class ParkhausService {
                 include: this.#includeAdresse,
             });
         if (parkhaeuser.length === 0) {
-            this.#logger.debug('find: Keine Parkhäuser gefunden');
+            this.#logger.debug('find: Keine Parkhaeuser gefunden');
             throw new NotFoundError(
-                `Keine Parkhäuser gefunden: ${JSON.stringify(suchparameter)}, Seite ${pageable.number}}`,
+                `Keine Parkhaeuser gefunden: ${JSON.stringify(suchparameter)}, Seite ${pageable.number}}`,
             );
         }
         const totalElements = await this.count(where);
