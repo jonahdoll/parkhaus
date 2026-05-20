@@ -1,5 +1,6 @@
 /* oxlint-disable import/max-dependencies */
 import { type Context, Hono, type Next } from 'hono';
+import { ForbiddenError, UnauthorizedError } from './security/errors.mts';
 import {
     NotFoundError,
     VersionInvalidError,
@@ -7,14 +8,19 @@ import {
 } from './parkhaus/service/errors.mts';
 import {
     createProblemDetails,
+    forbidden,
     preconditionFailed,
+    unauthorized,
     unprocessableContent,
 } from './problem-details.mts';
 import { type ZodError } from 'zod';
+import { router as authRouter } from './security/auth-router.mts';
 import { compress } from 'hono/compress';
 import { cors } from 'hono/cors';
 import { corsOptions } from './config/cors.mts';
 import { createMiddleware } from 'hono/factory';
+import { router as devRouter } from './config/dev/dev-router.mts';
+import { env } from './config/env.mts';
 import { getLogger } from './logger/logger.mts';
 import { paths } from './config/paths.mts';
 import { requestLogger } from './logger/request-logger.mts';
@@ -53,14 +59,14 @@ if (logger.isLevelEnabled('debug')) {
 app.route(paths.rest, router);
 // app.route(paths.rest, buchWriteRouter);
 // app.route(paths.health, healthRouter);
-// app.route(paths.auth, authRouter);
+app.route(paths.auth, authRouter);
 // app.route('/', graphqlApp);
 // app.route('/prometheus', prometheusRouter);
 
-// const { NODE_ENV } = env;
-// if (NODE_ENV === 'development' || NODE_ENV === 'test') {
-//     app.route(paths.dev, devRouter);
-// }
+const { NODE_ENV } = env;
+if (NODE_ENV === 'development' || NODE_ENV === 'test') {
+    app.route(paths.dev, devRouter);
+}
 
 if (logger.isLevelEnabled('debug')) {
     showRoutes(app, {
@@ -90,6 +96,14 @@ app.onError((error, c) => {
         error instanceof VersionOutdatedError
     ) {
         return createProblemDetails(c, preconditionFailed, error.message);
+    }
+
+    if (error instanceof UnauthorizedError) {
+        return createProblemDetails(c, unauthorized, error.message);
+    }
+
+    if (error instanceof ForbiddenError) {
+        return createProblemDetails(c, forbidden, error.message);
     }
 
     logger.error('Interner Fehler: %o', error);
