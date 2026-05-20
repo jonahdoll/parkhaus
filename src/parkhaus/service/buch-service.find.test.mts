@@ -1,6 +1,6 @@
 // oxlint-disable max-lines-per-function, no-magic-numbers
 
-import { ParkhausMitAdresseDTO, ParkhausMitAdresseUndAutos, ParkhausService } from './parkhaus-service.mts';
+import { type ParkhausMitAdresseDTO, type ParkhausMitAdresseUndAutos, ParkhausService } from './parkhaus-service.mts';
 import { Prisma, PrismaClient } from '../../generated/prisma/client.ts';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { type Pageable } from './pageable.mts';
