@@ -1,3 +1,5 @@
+import { DbPopulateService } from './config/dev/db-populate.mts';
+
 /**
  * Container mit Singletons zur Emulation von manueller DI
  *
