@@ -6,7 +6,6 @@ import { type Page } from '../../../src/parkhaus/router/page.mts';
 import { Parkhaus } from '../../../src/generated/prisma/client.ts';
 import { ParkhausMitAdresse } from '../../../src/parkhaus/service/parkhaus-service.mts';
 
-
 type ParkhausType = Omit<Parkhaus, 'tarifProStunde'> & {
     tarifProStunde: number;
 };
@@ -67,7 +66,8 @@ describe('GET /rest', () => {
             expect(status).toBe(200);
             expect(headers.get(CONTENT_TYPE)).toMatch(/json/iu);
 
-            const body = (await response.json()) as Page<ParkhausMitAdresseType>;
+            const body =
+                (await response.json()) as Page<ParkhausMitAdresseType>;
 
             expect(body).toBeDefined();
 
@@ -76,9 +76,7 @@ describe('GET /rest', () => {
                 .map((parkhaus) => parkhaus.name)
                 // oxlint-disable-next-line id-length
                 .forEach((n) =>
-                    expect(n).toStrictEqual(
-                        expect.stringContaining(name),
-                    ),
+                    expect(n).toStrictEqual(expect.stringContaining(name)),
                 );
         },
     );
@@ -104,7 +102,9 @@ describe('GET /rest', () => {
         'Parkhäuser mit max. Kapazität %d suchen',
         async (maxKapazitaet) => {
             // given
-            const params = new URLSearchParams({ kapazitaet: maxKapazitaet.toString() });
+            const params = new URLSearchParams({
+                kapazitaet: maxKapazitaet.toString(),
+            });
             const url = `${restURL}?${params}`;
             const requestHeaders = new Headers();
             requestHeaders.append('Accept', 'application/json');
@@ -122,16 +122,19 @@ describe('GET /rest', () => {
             // Jedes Parkhaus hat eine Kapazität <= maxKapazität
             body.content
                 .map((parkhaus) => parkhaus?.kapazitaet ?? 0)
-                .forEach((kp) => expect(Number(kp)).toBeLessThanOrEqual(maxKapazitaet));
+                .forEach((kp) =>
+                    expect(Number(kp)).toBeLessThanOrEqual(maxKapazitaet),
+                );
         },
     );
-
 
     test.concurrent.each(tarifProStunde)(
         'Parkhäuser mit max. Tarifpro Stunde %d suchen',
         async (tarif) => {
             // given
-            const params = new URLSearchParams({ tarifProStunde: tarif.toString() });
+            const params = new URLSearchParams({
+                tarifProStunde: tarif.toString(),
+            });
             const url = `${restURL}?${params}`;
             const requestHeaders = new Headers();
             requestHeaders.append('Accept', 'application/json');

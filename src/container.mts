@@ -11,6 +11,6 @@ const parkhausService = new ParkhausService();
  */
 export const container = {
     dbPopulateService: new DbPopulateService(),
-     keycloakService: new KeycloakService(),
+    keycloakService: new KeycloakService(),
     parkhausService,
 };
