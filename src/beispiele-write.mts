@@ -1,7 +1,7 @@
+import { type Prisma, PrismaClient } from './generated/prisma/client.ts';
 import { PrismaPg } from '@prisma/adapter-pg';
 import process from 'node:process';
 import { styleText } from 'node:util';
-import { type Prisma, PrismaClient } from './generated/prisma/client.ts';
 
 let message = styleText(
     'yellow',
@@ -29,6 +29,7 @@ const prisma = new PrismaClient({
     errorFormat: 'pretty',
     log,
 });
+// oxlint-disable-next-line id-length
 prisma.$on('query', (e) => {
     message = styleText('green', `Query: ${e.query}`);
     console.log(message);
@@ -70,8 +71,7 @@ const geaendertesParkhaus: Prisma.ParkhausUpdateInput = {
     kapazitaet: 110,
     tarifProStunde: 1.6,
 };
-type ParkhausUpdated = Prisma.ParkhausGetPayload<{}>; // eslint-disable-line @typescript-eslint/no-empty-object-type
-
+type ParkhausUpdated = Prisma.ParkhausGetPayload<{}>;
 try {
     await prisma.$connect();
     await prisma.$transaction(async (tx) => {
@@ -87,13 +87,11 @@ try {
             data: geaendertesParkhaus,
             where: { id: 5 },
         });
-        // eslint-disable-next-line require-atomic-updates
         message = styleText(['black', 'bgWhite'], 'Aktualisierte Version:');
         console.log(`${message} ${parkhausUpdated.version}`);
         console.log();
 
         const geloescht = await tx.parkhaus.delete({ where: { id: 6 } });
-        // eslint-disable-next-line require-atomic-updates
         message = styleText(['black', 'bgWhite'], 'Geloescht:');
         console.log(`${message} ${geloescht.id}`);
     });

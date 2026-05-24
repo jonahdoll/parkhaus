@@ -1,12 +1,13 @@
-import process from 'node:process';
-import { styleText } from 'node:util';
-import { PrismaPg } from '@prisma/adapter-pg';
-import { prismaQueryInsights } from '@prisma/sqlcommenter-query-insights';
+/* eslint-disable id-length */
 import {
     type Parkhaus,
     type Prisma,
     PrismaClient,
 } from './generated/prisma/client.ts';
+import { PrismaPg } from '@prisma/adapter-pg';
+import { prismaQueryInsights } from '@prisma/sqlcommenter-query-insights';
+import process from 'node:process';
+import { styleText } from 'node:util';
 
 let message = styleText(['black', 'bgWhite'], 'Node version');
 console.log(`${message}=${process.version}`);
