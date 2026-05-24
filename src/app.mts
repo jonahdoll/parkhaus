@@ -22,6 +22,7 @@ import { createMiddleware } from 'hono/factory';
 import { router as devRouter } from './config/dev/dev-router.mts';
 import { env } from './config/env.mts';
 import { getLogger } from './logger/logger.mts';
+import { router as healthRouter } from './admin/health-router.mts';
 import { paths } from './config/paths.mts';
 import { requestLogger } from './logger/request-logger.mts';
 import { responseTime } from './logger/response-time.mts';
@@ -58,7 +59,7 @@ if (logger.isLevelEnabled('debug')) {
 // -----------------------------------------------------------------------------
 app.route(paths.rest, router);
 // app.route(paths.rest, buchWriteRouter);
-// app.route(paths.health, healthRouter);
+app.route(paths.health, healthRouter);
 app.route(paths.auth, authRouter);
 // app.route('/', graphqlApp);
 // app.route('/prometheus', prometheusRouter);
