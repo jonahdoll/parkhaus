@@ -1,6 +1,10 @@
 // oxlint-disable max-lines-per-function, no-magic-numbers
 
-import { type ParkhausMitAdresseDTO, type ParkhausMitAdresseUndAutos, ParkhausService } from './parkhaus-service.mts';
+import {
+    type ParkhausMitAdresseDTO,
+    type ParkhausMitAdresseUndAutos,
+    ParkhausService,
+} from './parkhaus-service.mts';
 import { Prisma, PrismaClient } from '../../generated/prisma/client.ts';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { type Pageable } from './pageable.mts';
@@ -39,24 +43,24 @@ describe('ParkhausService find', () => {
         const suchparameter: Suchparameter = { name };
         const pageable: Pageable = { number: 1, size: 5 };
         const parkhausMock: ParkhausMitAdresseUndAutos = {
-                    id: 1,
-                    version: 0,
-                    name: 'Südpfalz-Parkhaus Bellheim',
-                    kapazitaet: 120,
-                    // oxlint-disable-next-line no-magic-numbers
-                    tarifProStunde: new Prisma.Decimal(2.2),
-                    erzeugt: new Date(),
-                    aktualisiert: new Date(),
-                    adresse: {
-                        id: 11,
-                        plz: '76756',
-                        ort: 'Bellheim',
-                        strasse: 'Hauptstraße',
-                        hausnummer: '101',
-                        parkhausId: 1,
-                    },
-                    autos: [],
-                };
+            id: 1,
+            version: 0,
+            name: 'Südpfalz-Parkhaus Bellheim',
+            kapazitaet: 120,
+            // oxlint-disable-next-line no-magic-numbers
+            tarifProStunde: new Prisma.Decimal(2.2),
+            erzeugt: new Date(),
+            aktualisiert: new Date(),
+            adresse: {
+                id: 11,
+                plz: '76756',
+                ort: 'Bellheim',
+                strasse: 'Hauptstraße',
+                hausnummer: '101',
+                parkhausId: 1,
+            },
+            autos: [],
+        };
         const { tarifProStunde, ...parkhausRest } = parkhausMock;
         const parkhausMockDTO: ParkhausMitAdresseDTO = {
             ...parkhausRest,
