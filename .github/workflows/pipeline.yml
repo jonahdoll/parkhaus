@@ -1,100 +1,49 @@
-name: Pipeline
+name: CI
 
 on:
   push:
-    branches:
-      - main
   pull_request:
 
 permissions:
   contents: read
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
-    name: Build
+  quality:
+    name: Format, lint, typecheck, test
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       - name: Setup Bun
         uses: oven-sh/setup-bun@v2
         with:
-          bun-version: 1.3.13
+          bun-version: 1.3.14
 
       - name: Install dependencies
         run: bun install --frozen-lockfile
 
       - name: Generate Prisma client
         env:
-          DATABASE_URL: postgresql://DUMMY_URL
-        run: bunx prisma generate --schema prisma/schema.prisma
+          DATABASE_URL: postgresql://parkhaus:p@localhost:5432/parkhaus?schema=parkhaus
+        run: bunx prisma generate
 
-      - name: Pack build workspace
-        run: |
-          tar -czf build-workspace.tgz \
-            .editorconfig \
-            .gitignore \
-            .prettierignore \
-            package.json \
-            bun.lock \
-            tsconfig.json \
-            eslint.config.mts \
-            prettier.config.mts \
-            prisma \
-            src \
-            node_modules
+      - name: Typecheck
+        run: bun run tsc
 
-      - name: Upload build workspace
-        uses: actions/upload-artifact@v4
-        with:
-          name: build-workspace
-          retention-days: 1
-          path: build-workspace.tgz
+      - name: oxfmt
+        run: bun run fmt:check
 
-  eslint:
-    name: ESLint
-    runs-on: ubuntu-latest
-    needs: build
+      - name: oxlint
+        run: bun run lint
 
-    steps:
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.13
+      - name: Create log directory
+        run: mkdir -p log
 
-      - name: Download build workspace
-        uses: actions/download-artifact@v4
-        with:
-          name: build-workspace
-          path: .
-
-      - name: Extract build workspace
-        run: tar -xzf build-workspace.tgz
-
-      - name: Run ESLint
-        run: bun run eslint
-
-  prettier:
-    name: Prettier
-    runs-on: ubuntu-latest
-    needs: build
-
-    steps:
-      - name: Setup Bun
-        uses: oven-sh/setup-bun@v2
-        with:
-          bun-version: 1.3.13
-
-      - name: Download build workspace
-        uses: actions/download-artifact@v4
-        with:
-          name: build-workspace
-          path: .
-
-      - name: Extract build workspace
-        run: tar -xzf build-workspace.tgz
-
-      - name: Run Prettier check
-        run: bunx --bun prettier --check .
+      - name: vitest
+        run: bun run test -- --run --passWithNoTests --project unit
