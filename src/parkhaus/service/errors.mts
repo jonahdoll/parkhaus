@@ -27,6 +27,18 @@
 export class NotFoundError extends Error {}
 
 /**
+ * Error-Klasse für eine bereits existierenden Namen.
+ */
+export class ParkhausExistsError extends Error {
+    readonly parkhausName: string | undefined;
+
+    constructor(parkhausName: string | undefined) {
+        super(`Ein Parkhaus mit dem Namen ${parkhausName} existiert bereits.`);
+        this.parkhausName = parkhausName;
+    }
+}
+
+/**
  * Error-Klasse für eine ungültige Versionsnummer beim Ändern.
  */
 export class VersionInvalidError extends Error {
