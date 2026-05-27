@@ -45,7 +45,7 @@ const logger = getLogger('app', 'file');
 const securityHeaders = createMiddleware(async (c: Context, next: Next) => {
     c.header('X-Content-Type-Options', 'nosniff');
     c.header('X-Frame-Options', 'SAMEORIGIN');
-    await next();
+    return await next();
 });
 
 app.use(secureHeaders(), cors(corsOptions), securityHeaders, compress());
