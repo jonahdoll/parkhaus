@@ -3,6 +3,7 @@ import { type Context, Hono, type Next } from 'hono';
 import { ForbiddenError, UnauthorizedError } from './security/errors.mts';
 import {
     NotFoundError,
+    ParkhausExistsError,
     VersionInvalidError,
     VersionOutdatedError,
 } from './parkhaus/service/errors.mts';
@@ -23,6 +24,7 @@ import { router as devRouter } from './config/dev/dev-router.mts';
 import { env } from './config/env.mts';
 import { getLogger } from './logger/logger.mts';
 import { router as healthRouter } from './admin/health-router.mts';
+import { router as parkhausWriteRouter } from './parkhaus/router/parkhaus-write-router.mts';
 import { paths } from './config/paths.mts';
 import { requestLogger } from './logger/request-logger.mts';
 import { responseTime } from './logger/response-time.mts';
@@ -58,7 +60,7 @@ if (logger.isLevelEnabled('debug')) {
 // R o u t e n
 // -----------------------------------------------------------------------------
 app.route(paths.rest, router);
-// app.route(paths.rest, buchWriteRouter);
+app.route(paths.rest, parkhausWriteRouter);
 app.route(paths.health, healthRouter);
 app.route(paths.auth, authRouter);
 // app.route('/', graphqlApp);
@@ -90,6 +92,10 @@ app.onError((error, c) => {
             unprocessableContent,
             (error as ZodError).issues,
         );
+    }
+
+    if (error instanceof ParkhausExistsError) {
+        return createProblemDetails(c, unprocessableContent, error.message);
     }
 
     if (
