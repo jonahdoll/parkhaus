@@ -10,13 +10,16 @@ import {
     VersionInvalidError,
     VersionOutdatedError,
 } from './errors.mts';
-import { type ParkhausFile, type Prisma } from '../../generated/prisma/client.ts';
+import {
+    type ParkhausFile,
+    type Prisma,
+} from '../../generated/prisma/client.ts';
 import { ParkhausService } from './parkhaus-service.mts';
 import { getLogger } from '../../logger/logger.mts';
 import { prismaClient } from '../../config/prisma-client.mts';
 import { sendmail } from '../../mail/sendmail.mts';
 
-export type Create = Prisma.ParkhausCreateInput;
+export type ParkhausCreate = Prisma.ParkhausCreateInput;
 type ParkhausCreated = Prisma.ParkhausGetPayload<{
     include: {
         adresse: true;
@@ -73,7 +76,7 @@ export class ParkhausWriteService {
         });
         await ParkhausWriteService.#sendmail({
             id: parkhausDb?.id ?? 'N/A',
-            titel: parkhausDb?.titel?.titel ?? 'N/A',
+            titel: parkhausDb?.name ?? 'N/A',
         });
 
         this.#logger.debug('create: parkhausDb.id=%s', parkhausDb?.id);
@@ -111,7 +114,10 @@ export class ParkhausWriteService {
                 where: { id: parkhausId },
             });
             if (parkhaus === null) {
-                this.#logger.debug('Es gibt kein Parkhaus mit der ID %d', parkhausId);
+                this.#logger.debug(
+                    'Es gibt kein Parkhaus mit der ID %d',
+                    parkhausId,
+                );
                 throw new NotFoundError(
                     `Es gibt kein Parkhaus mit der ID ${parkhausId}.`,
                 );
@@ -126,7 +132,9 @@ export class ParkhausWriteService {
                 mimetype: type,
                 parkhausId,
             };
-            parkhausFileCreated = await tx.parkhausFile.create({ data: parkhausFile });
+            parkhausFileCreated = await tx.parkhausFile.create({
+                data: parkhausFile,
+            });
         });
 
         this.#logger.debug(
