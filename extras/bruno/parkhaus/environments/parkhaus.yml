@@ -1,0 +1,16 @@
+name: parkhaus
+variables:
+  - secret: true
+    name: clientId
+  - secret: true
+    name: clientSecret
+  - secret: true
+    name: username
+  - secret: true
+    name: password
+  - secret: true
+    name: baseAuthUrl
+  - secret: true
+    name: oidcAuthUrl
+  - secret: true
+    name: oidcTokenUrl
