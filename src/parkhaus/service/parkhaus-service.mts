@@ -4,10 +4,13 @@
  */
 
 import { type Suchparameter, suchparameterNamen } from './suchparameter.mts';
+import {
+    type ParkhausFile,
+    Prisma,
+} from '../../generated/prisma/client.ts';
 import { NotFoundError } from './errors.mts';
 import { type Pageable } from './pageable.mts';
 import { ParkhausInclude } from '../../generated/prisma/models/Parkhaus.ts';
-import { Prisma } from '../../generated/prisma/client.ts';
 import { type Slice } from './slice.mts';
 import { buildWhere } from './where-builder.mts';
 import { getLogger } from '../../logger/logger.mts';
@@ -91,6 +94,40 @@ export class ParkhausService {
 
         this.#logger.debug('findById: parkhausDTO=%o', parkhausDTO);
         return parkhausDTO;
+    }
+
+    /**
+     * Die Binärdatei zu einem vorhandenen Parkhaus suchen.
+     * @param parkhausId ID des Parkhauses, zu dem die Datei gehört
+     * @returns Das gefundene `ParkhausFile` in einem Promise.
+     * @throws NotFoundError falls kein Parkhaus oder keine Datei existiert
+     */
+    async findFileByParkhausId(
+        parkhausId: number,
+    ): Promise<Readonly<ParkhausFile>> {
+        this.#logger.debug('findFileByParkhausId: parkhausId=%d', parkhausId);
+
+        const parkhausFile = await prismaClient.parkhausFile.findUnique({
+            where: { parkhausId },
+        });
+        if (parkhausFile === null) {
+            this.#logger.debug(
+                'findFileByParkhausId: Keine Datei zum Parkhaus mit der ID %d',
+                parkhausId,
+            );
+            throw new NotFoundError(
+                `Es gibt keine Datei zum Parkhaus mit der ID ${parkhausId}.`,
+            );
+        }
+
+        this.#logger.debug(
+            'findFileByParkhausId: id=%s, filename=%s, mimetype=%s, byteLength=%s',
+            parkhausFile.id,
+            parkhausFile.filename,
+            parkhausFile.mimetype,
+            parkhausFile.data.byteLength,
+        );
+        return parkhausFile;
     }
 
     /**
