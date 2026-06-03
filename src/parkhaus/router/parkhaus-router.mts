@@ -20,6 +20,37 @@ export const router = new Hono();
 const logger = getLogger('parkhaus-router', 'file');
 
 // -----------------------------------------------------------------------------
+// F i l e   D o w n l o a d
+// -----------------------------------------------------------------------------
+router.get('/file/:id', async (c) => {
+    const { req } = c;
+    const id = req.param('id');
+    logger.debug('download: id=%s', id);
+    const idNumber = Number.parseInt(id, 10);
+    if (Number.isNaN(idNumber)) {
+        return c.notFound();
+    }
+
+    const parkhausFile = await parkhausService.findFileByParkhausId(idNumber);
+    const { data, filename, mimetype } = parkhausFile;
+    logger.debug(
+        'download: filename=%s, mimetype=%s, byteLength=%d',
+        filename,
+        mimetype,
+        data.byteLength,
+    );
+
+    c.header('Content-Type', mimetype ?? 'application/octet-stream');
+    c.header(
+        'Content-Disposition',
+        `attachment; filename="${filename}"`,
+    );
+    // Kopie mit konkretem ArrayBuffer, damit der Typ zu Honos Body passt
+    const bytes = new Uint8Array(data);
+    return c.newResponse(bytes);
+});
+
+// -----------------------------------------------------------------------------
 // S u c h e   m i t   P f a d - P a r a m e t e r
 // -----------------------------------------------------------------------------
 router.get('/:id', async (c) => {
