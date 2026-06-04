@@ -41,10 +41,7 @@ router.get('/file/:id', async (c) => {
     );
 
     c.header('Content-Type', mimetype ?? 'application/octet-stream');
-    c.header(
-        'Content-Disposition',
-        `attachment; filename="${filename}"`,
-    );
+    c.header('Content-Disposition', `attachment; filename="${filename}"`);
     // Kopie mit konkretem ArrayBuffer, damit der Typ zu Honos Body passt
     const bytes = new Uint8Array(data);
     return c.newResponse(bytes);
