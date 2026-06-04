@@ -284,10 +284,31 @@ export class ParkhausWriteService {
     }
 
     async #validateCreate({
-        name,
-    }: Prisma.ParkhausCreateInput): Promise<undefined> {
-        // FIX: name statt parkhausId verwenden
-        this.#logger.debug('#validateCreate: name=%s', name);
+                              name,
+                              kapazitaet,
+                              autos,
+                          }: Prisma.ParkhausCreateInput): Promise<undefined> {
+        this.#logger.debug(
+            '#validateCreate: name=%s, kapazitaet=%s',
+            name,
+            kapazitaet,
+        );
+
+        // Pruefung, ob die gewuenschte Anzahl Autos die Kapazitaet ueberschreitet
+        const anzahlAutos = autos?.create
+            ? (Array.isArray(autos.create)
+                ? autos.create.length
+                : 1)
+            : 0;
+        if (kapazitaet !== undefined && anzahlAutos > kapazitaet) {
+            this.#logger.debug(
+                '#validateCreate: Kapazitaet ueberschritten: anzahlAutos=%d, kapazitaet=%d',
+                anzahlAutos,
+                kapazitaet,
+            );
+            throw new KapazitaetUeberschrittenError(Number.NaN, kapazitaet);
+        }
+
         if (name === undefined) {
             this.#logger.debug('#validateCreate: ok');
             return;
