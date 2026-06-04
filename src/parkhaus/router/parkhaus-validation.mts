@@ -2,6 +2,13 @@
 
 import { z } from 'zod';
 
+const AutoSchema = z.strictObject({
+    id: z.number().int().gt(0).optional(),
+    kennzeichen: z.string().min(1).max(20),
+    einfahrtszeit: z.coerce.date(),
+    kundentyp: z.enum(['PREMIUM', 'BASIS', 'ANWOHNER']),
+});
+
 const ParkhausComplete = z.strictObject({
     id: z.union([z.number().int().gt(0), z.string().regex(/^[1-9]\d*$/u)]),
     version: z.int().gte(0),
@@ -16,16 +23,7 @@ const ParkhausComplete = z.strictObject({
         strasse: z.string().min(1).max(100),
         hausnummer: z.string().min(1).max(10),
     }),
-    autos: z
-        .array(
-            z.strictObject({
-                id: z.number().int().gt(0).optional(),
-                kennzeichen: z.string().min(1).max(20),
-                einfahrtszeit: z.coerce.date(),
-                kundentyp: z.enum(['PREMIUM', 'BASIS', 'ANWOHNER']),
-            }),
-        )
-        .optional(),
+    autos: z.array(AutoSchema).optional(),
 });
 export const ParkhausNeuSchema = ParkhausComplete.omit({
     id: true,
@@ -44,5 +42,8 @@ export const ParkhausUpdateGraphQLSchema = ParkhausComplete.omit({
     autos: true,
 }).readonly();
 
+export const AutoNeuSchema = AutoSchema.omit({ id: true }).readonly();
+
 export type ParkhausNeuType = z.infer<typeof ParkhausNeuSchema>;
 export type ParkhausUpdateType = z.infer<typeof ParkhausUpdateSchema>;
+export type AutoNeuType = z.infer<typeof AutoNeuSchema>;
