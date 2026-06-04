@@ -1,3 +1,4 @@
+// oxlint-disable max-lines
 /**
  * Das Modul besteht aus der Klasse {@linkcode ParkhausWriteService} für die
  * Schreiboperationen.
@@ -5,6 +6,7 @@
  */
 
 import {
+    KapazitaetUeberschrittenError,
     NotFoundError,
     ParkhausExistsError,
     VersionInvalidError,
@@ -42,6 +44,10 @@ type ParkhausUpdated = Prisma.ParkhausGetPayload<{}>;
 type ParkhausFileCreate = Prisma.ParkhausFileUncheckedCreateInput;
 export type ParkhausFileCreated = Prisma.ParkhausFileGetPayload<{}>;
 
+/** Eingabedaten für ein neues Auto ohne Bezug zum Parkhaus. */
+export type AutoCreate = Omit<Prisma.AutoCreateInput, 'parkhaus'>;
+type AutoCreated = Prisma.AutoGetPayload<{}>;
+
 /**
  * Die Klasse `ParkhausWriteService` implementiert den Anwendungskern für das
  * Schreiben von Parkhäusern und greift mit _Prisma_ auf die DB zu.
@@ -74,9 +80,14 @@ export class ParkhausWriteService {
                 include: { adresse: true, autos: true },
             });
         });
-        await ParkhausWriteService.#sendmail({
-            id: parkhausDb?.id ?? 'N/A',
-            titel: parkhausDb?.name ?? 'N/A',
+        // Mail "fire and forget": Die Response soll nicht auf den Mailversand
+        // warten, sondern sofort nach dem erfolgreichen DB-Insert zurueckkommen.
+        // Der Versand wird per setImmediate entkoppelt; Fehler werden in
+        // #sendmail bzw. sendmail intern abgefangen und geloggt.
+        const id = parkhausDb?.id ?? 'N/A';
+        const titel = parkhausDb?.name ?? 'N/A';
+        setImmediate(async () => {
+            await ParkhausWriteService.#sendmail({ id, titel });
         });
 
         this.#logger.debug('create: parkhausDb.id=%s', parkhausDb?.id);
@@ -148,6 +159,71 @@ export class ParkhausWriteService {
     }
 
     /**
+     * Ein Auto soll zu einem vorhandenen Parkhaus hinzugefügt werden. Dabei wird
+     * geprüft, ob das Parkhaus noch freie Kapazität hat.
+     * @param parkhausId ID des vorhandenen Parkhauses
+     * @param auto Das hinzuzufügende Auto
+     * @returns Das neu angelegte Auto
+     * @throws NotFoundError falls kein Parkhaus zur ID vorhanden ist
+     * @throws KapazitaetUeberschrittenError falls keine freie Kapazität mehr vorhanden ist
+     */
+    async addAuto(
+        parkhausId: number,
+        auto: AutoCreate,
+    ): Promise<Readonly<AutoCreated>> {
+        this.#logger.debug('addAuto: parkhausId=%d, auto=%o', parkhausId, auto);
+
+        let autoCreated: AutoCreated | undefined;
+        await prismaClient.$transaction(async (tx) => {
+            // Parkhaus inkl. aktueller Anzahl Autos ermitteln
+            const parkhaus = await tx.parkhaus.findUnique({
+                where: { id: parkhausId },
+                include: { _count: { select: { autos: true } } },
+            });
+            if (parkhaus === null) {
+                this.#logger.debug(
+                    'addAuto: Es gibt kein Parkhaus mit der ID %d',
+                    parkhausId,
+                );
+                throw new NotFoundError(
+                    `Es gibt kein Parkhaus mit der ID ${parkhausId}.`,
+                );
+            }
+
+            // _count ist eine von Prisma generierte Property
+            // oxlint-disable-next-line no-underscore-dangle
+            const anzahlAutos = parkhaus._count.autos;
+            this.#logger.debug(
+                'addAuto: anzahlAutos=%d, kapazitaet=%d',
+                anzahlAutos,
+                parkhaus.kapazitaet,
+            );
+            if (anzahlAutos >= parkhaus.kapazitaet) {
+                this.#logger.debug(
+                    'addAuto: Kapazitaet ueberschritten fuer parkhausId=%d',
+                    parkhausId,
+                );
+                throw new KapazitaetUeberschrittenError(
+                    parkhausId,
+                    parkhaus.kapazitaet,
+                );
+            }
+
+            autoCreated = await tx.auto.create({
+                data: { ...auto, parkhaus: { connect: { id: parkhausId } } },
+            });
+        });
+
+        if (autoCreated === undefined) {
+            throw new NotFoundError(
+                `Es gibt kein Parkhaus mit der ID ${parkhausId}.`,
+            );
+        }
+        this.#logger.debug('addAuto: autoCreated=%o', autoCreated);
+        return autoCreated;
+    }
+
+    /**
      * Ein vorhandenes Parkhaus soll aktualisiert werden. "Destructured" Argument
      * mit id (ID des zu aktualisierenden Parkhauses), parkhaus (zu aktualisierendes Parkhaus)
      * und version (Versionsnummer für optimistische Synchronisation).
@@ -213,9 +289,29 @@ export class ParkhausWriteService {
 
     async #validateCreate({
         name,
+        kapazitaet,
+        autos,
     }: Prisma.ParkhausCreateInput): Promise<undefined> {
-        // FIX: name statt parkhausId verwenden
-        this.#logger.debug('#validateCreate: name=%s', name);
+        this.#logger.debug(
+            '#validateCreate: name=%s, kapazitaet=%s',
+            name,
+            kapazitaet,
+        );
+
+        // Pruefung, ob die gewuenschte Anzahl Autos die Kapazitaet ueberschreitet
+        let anzahlAutos = 0;
+        if (autos?.create) {
+            anzahlAutos = Array.isArray(autos.create) ? autos.create.length : 1;
+        }
+        if (kapazitaet !== undefined && anzahlAutos > kapazitaet) {
+            this.#logger.debug(
+                '#validateCreate: Kapazitaet ueberschritten: anzahlAutos=%d, kapazitaet=%d',
+                anzahlAutos,
+                kapazitaet,
+            );
+            throw new KapazitaetUeberschrittenError(Number.NaN, kapazitaet);
+        }
+
         if (name === undefined) {
             this.#logger.debug('#validateCreate: ok');
             return;

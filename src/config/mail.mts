@@ -63,6 +63,10 @@ export const options: Options = {
 
     priority: 'normal',
     logger: useLogger,
+    // Timeouts, damit ein nicht erreichbarer Mailserver nicht lange blockiert
+    connectionTimeout: 5000,
+    greetingTimeout: 5000,
+    socketTimeout: 5000,
 } as const;
 
 type MailConfig = {

@@ -4,11 +4,14 @@
  */
 
 import {
+    type AutoCreate,
     type ParkhausCreate,
     type ParkhausFileCreated,
     type ParkhausUpdate,
 } from '../service/parkhaus-write-service.mts';
 import {
+    AutoNeuSchema,
+    type AutoNeuType,
     ParkhausNeuSchema,
     type ParkhausNeuType,
     ParkhausUpdateSchema,
@@ -135,6 +138,44 @@ router.put('/:id', rolesRequired('admin', 'user'), async (c) => {
         ETag: `"${neueVersion}"`,
     };
     return c.body(null, 204, headers);
+});
+
+// -----------------------------------------------------------------------------
+// A u t o   h i n z u f u e g e n
+// -----------------------------------------------------------------------------
+const autoDtoToAutoCreateInput = (autoDTO: AutoNeuType): AutoCreate => {
+    return {
+        kennzeichen: autoDTO.kennzeichen,
+        einfahrtszeit: autoDTO.einfahrtszeit,
+        kundentyp: autoDTO.kundentyp,
+    };
+};
+
+router.post('/:id/autos', rolesRequired('admin', 'user'), async (c) => {
+    const id = c.req.param('id') ?? '-1';
+    logger.debug('addAuto: id=%s', id);
+    const idNumber = Number.parseInt(id, 10);
+    if (Number.isNaN(idNumber)) {
+        return c.notFound();
+    }
+
+    const requestBody = await c.req.json();
+
+    // Validierung mit Zod: ZodError wird geworfen, falls Validierung nicht erfolgreich
+    const autoDTO: AutoNeuType = AutoNeuSchema.parse(requestBody);
+    logger.debug('addAuto: autoDTO=%o', autoDTO);
+
+    const auto = autoDtoToAutoCreateInput(autoDTO);
+    const autoCreated = await parkhausWriteService.addAuto(idNumber, auto);
+    logger.debug('addAuto: autoCreated.id=%s', autoCreated.id);
+
+    const requestUrl = c.req.url;
+    const baseUrl = requestUrl.includes('?')
+        ? requestUrl.slice(0, requestUrl.lastIndexOf('?'))
+        : requestUrl;
+    const location = `${baseUrl.replace(/\/$/u, '')}/${autoCreated.id}`;
+    c.header('Location', location);
+    return c.body(null, 201);
 });
 
 // -----------------------------------------------------------------------------

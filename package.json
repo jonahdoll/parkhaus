@@ -34,10 +34,10 @@
   "author": "Jonah Doll <dojo1024@h-ka.de> (https://www.h-ka.de)",
   "type": "module",
   "scripts": {
-    "start": "bun src/index.mts",
+    "start": "NODE_ENV=production bun src/index.mts",
     "test": "vitest",
     "asciidoctor": "node scripts/asciidoctor.mts",
-    "dev": "bun --watch src/index.mts",
+    "dev": "NODE_ENV=development bun --watch src/index.mts",
     "hello": "bun --watch src/index-hello.mts",
     "k6": "k6 run test\\lasttest\\script.ts",
     "leasot": "leasot --exit-nicely src/**/*.mts",
