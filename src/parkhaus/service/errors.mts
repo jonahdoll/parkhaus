@@ -39,6 +39,23 @@ export class ParkhausExistsError extends Error {
 }
 
 /**
+ * Error-Klasse für ein Parkhaus, dessen Kapazität bereits ausgeschöpft ist.
+ */
+export class KapazitaetUeberschrittenError extends Error {
+    readonly parkhausId: number;
+
+    readonly kapazitaet: number;
+
+    constructor(parkhausId: number, kapazitaet: number) {
+        super(
+            `Das Parkhaus mit der ID ${parkhausId} hat keine freie Kapazitaet mehr (Kapazitaet: ${kapazitaet}).`,
+        );
+        this.parkhausId = parkhausId;
+        this.kapazitaet = kapazitaet;
+    }
+}
+
+/**
  * Error-Klasse für eine ungültige Versionsnummer beim Ändern.
  */
 export class VersionInvalidError extends Error {
