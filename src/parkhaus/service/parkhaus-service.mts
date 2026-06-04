@@ -4,10 +4,7 @@
  */
 
 import { type Suchparameter, suchparameterNamen } from './suchparameter.mts';
-import {
-    type ParkhausFile,
-    Prisma,
-} from '../../generated/prisma/client.ts';
+import { type ParkhausFile, Prisma } from '../../generated/prisma/client.ts';
 import { NotFoundError } from './errors.mts';
 import { type Pageable } from './pageable.mts';
 import { ParkhausInclude } from '../../generated/prisma/models/Parkhaus.ts';
