@@ -65,7 +65,7 @@ export default defineConfig({
         ],
 
         // https://vitest.dev/config/ui.html
-        ui: true,
+        // ui: true,
         // IPv4 mit Port 3001 statt 51204
         // https://vitest.dev/config/api.html
         // Kommando "netsh interface ipv4 show excludedportrange protocol=tcp"
