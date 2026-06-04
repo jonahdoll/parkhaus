@@ -49,11 +49,27 @@ export const sendmail = async ({ subject, body }: SendMailParams) => {
     }
 
     const mailOptions: SendMailOptions = { from, to, subject, html: body };
+    logger.info('sendmail: Sende Mail "%s" an %s', subject, to);
     logger.debug('mailOptions=%o', mailOptions);
 
+    const transport = createTransport(mailConfig.options);
+
     try {
-        await createTransport(mailConfig.options).sendMail(mailOptions); // NOSONAR
+        // Verbindung zum SMTP-Server vorab pruefen, damit Fehler sichtbar werden
+        await transport.verify();
+        const info = await transport.sendMail(mailOptions); // NOSONAR
+        logger.info(
+            'sendmail: Mail gesendet, messageId=%s, response=%s',
+            info.messageId,
+            info.response,
+        );
     } catch (err) {
-        logger.warn('Fehler %o', err as object);
+        const error = err as Error;
+        logger.error(
+            'sendmail: Fehler beim Senden der Mail an %s: %s',
+            to,
+            error.message,
+        );
+        logger.error(error);
     }
 };

@@ -1,3 +1,4 @@
+// oxlint-disable max-lines
 /**
  * Das Modul besteht aus der Klasse {@linkcode ParkhausWriteService} für die
  * Schreiboperationen.
@@ -79,9 +80,14 @@ export class ParkhausWriteService {
                 include: { adresse: true, autos: true },
             });
         });
-        await ParkhausWriteService.#sendmail({
-            id: parkhausDb?.id ?? 'N/A',
-            titel: parkhausDb?.name ?? 'N/A',
+        // Mail "fire and forget": Die Response soll nicht auf den Mailversand
+        // warten, sondern sofort nach dem erfolgreichen DB-Insert zurueckkommen.
+        // Der Versand wird per setImmediate entkoppelt; Fehler werden in
+        // #sendmail bzw. sendmail intern abgefangen und geloggt.
+        const id = parkhausDb?.id ?? 'N/A';
+        const titel = parkhausDb?.name ?? 'N/A';
+        setImmediate(async () => {
+            await ParkhausWriteService.#sendmail({ id, titel });
         });
 
         this.#logger.debug('create: parkhausDb.id=%s', parkhausDb?.id);
@@ -165,11 +171,7 @@ export class ParkhausWriteService {
         parkhausId: number,
         auto: AutoCreate,
     ): Promise<Readonly<AutoCreated>> {
-        this.#logger.debug(
-            'addAuto: parkhausId=%d, auto=%o',
-            parkhausId,
-            auto,
-        );
+        this.#logger.debug('addAuto: parkhausId=%d, auto=%o', parkhausId, auto);
 
         let autoCreated: AutoCreated | undefined;
         await prismaClient.$transaction(async (tx) => {
@@ -188,6 +190,8 @@ export class ParkhausWriteService {
                 );
             }
 
+            // _count ist eine von Prisma generierte Property
+            // oxlint-disable-next-line no-underscore-dangle
             const anzahlAutos = parkhaus._count.autos;
             this.#logger.debug(
                 'addAuto: anzahlAutos=%d, kapazitaet=%d',
@@ -284,10 +288,10 @@ export class ParkhausWriteService {
     }
 
     async #validateCreate({
-                              name,
-                              kapazitaet,
-                              autos,
-                          }: Prisma.ParkhausCreateInput): Promise<undefined> {
+        name,
+        kapazitaet,
+        autos,
+    }: Prisma.ParkhausCreateInput): Promise<undefined> {
         this.#logger.debug(
             '#validateCreate: name=%s, kapazitaet=%s',
             name,
@@ -295,11 +299,10 @@ export class ParkhausWriteService {
         );
 
         // Pruefung, ob die gewuenschte Anzahl Autos die Kapazitaet ueberschreitet
-        const anzahlAutos = autos?.create
-            ? (Array.isArray(autos.create)
-                ? autos.create.length
-                : 1)
-            : 0;
+        let anzahlAutos = 0;
+        if (autos?.create) {
+            anzahlAutos = Array.isArray(autos.create) ? autos.create.length : 1;
+        }
         if (kapazitaet !== undefined && anzahlAutos > kapazitaet) {
             this.#logger.debug(
                 '#validateCreate: Kapazitaet ueberschritten: anzahlAutos=%d, kapazitaet=%d',

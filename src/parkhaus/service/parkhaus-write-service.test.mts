@@ -8,6 +8,7 @@ import {
 import { Prisma, PrismaClient } from '../../generated/prisma/client.ts';
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { ParkhausService } from './parkhaus-service.mts';
+import { setImmediate as setImmediatePromise } from 'node:timers/promises';
 
 // Hoisting: wird an den (Datei-) Anfang verschoben
 const { createMock, countMock, transactionMock, sendmailMock } = vi.hoisted(
@@ -98,6 +99,10 @@ describe('ParkhausWriteService create', () => {
 
         // then
         expect(id).toBe(idMock);
+        // Der Mailversand erfolgt entkoppelt ("fire and forget") per
+        // setImmediate, daher muss ein Event-Loop-Tick abgewartet werden,
+        // bevor der Aufruf von sendmail geprueft werden kann.
+        await setImmediatePromise();
         expect(sendmailMock).toHaveBeenCalledOnce();
     });
 });
