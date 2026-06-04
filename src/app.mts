@@ -2,6 +2,7 @@
 import { type Context, Hono, type Next } from 'hono';
 import { ForbiddenError, UnauthorizedError } from './security/errors.mts';
 import {
+    KapazitaetUeberschrittenError,
     NotFoundError,
     ParkhausExistsError,
     VersionInvalidError,
@@ -95,6 +96,10 @@ app.onError((error, c) => {
     }
 
     if (error instanceof ParkhausExistsError) {
+        return createProblemDetails(c, unprocessableContent, error.message);
+    }
+
+    if (error instanceof KapazitaetUeberschrittenError) {
         return createProblemDetails(c, unprocessableContent, error.message);
     }
 
