@@ -169,7 +169,11 @@ router.post('/:id/autos', rolesRequired('admin', 'user'), async (c) => {
     const autoCreated = await parkhausWriteService.addAuto(idNumber, auto);
     logger.debug('addAuto: autoCreated.id=%s', autoCreated.id);
 
-    const location = `${createBaseUrl(c.req)}/${id}/autos/${autoCreated.id}`;
+    const requestUrl = c.req.url;
+    const baseUrl = requestUrl.includes('?')
+        ? requestUrl.slice(0, requestUrl.lastIndexOf('?'))
+        : requestUrl;
+    const location = `${baseUrl.replace(/\/$/u, '')}/${autoCreated.id}`;
     c.header('Location', location);
     return c.body(null, 201);
 });
